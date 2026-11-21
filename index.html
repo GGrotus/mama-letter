@@ -7,6 +7,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2032%2032%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%229%22%20fill%3D%22%23773b45%22%2F%3E%3Cpath%20fill%3D%22%23fff4e4%22%20d%3D%22M16%2024.5%207.7%2016a5.2%205.2%200%200%201%207.4-7.3l.9%201%20.9-1a5.2%205.2%200%200%201%207.4%207.3z%22%2F%3E%3C%2Fsvg%3E">
 <meta name="description" content="Интерактивная открытка для мамы с девятью пожеланиями и личным письмом.">
 <title>Письмо для мамы</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&amp;display=swap">
 <style>
 :root {
   color-scheme: light;
@@ -46,44 +47,40 @@ h2 { font-size:clamp(2rem,6vw,3.45rem) }
 .seal { position:absolute; z-index:3; top:56%;left:50%; translate:-50% -50%; display:grid; place-items:center; width:clamp(38px,11vw,64px); aspect-ratio:1; color:#fff1d9; background:radial-gradient(circle,#99505c 55%,#71333d 57%,#a55e66 65%,#73353f 68%); border-radius:48%; border:2px solid #7d3c44; box-shadow:0 4px 8px #461b2655; font-size:clamp(18px,5vw,30px); transition:opacity .2s }
 .opening .flap { transform:rotateX(163deg) }
 .opening .seal { opacity:0 }
-.notes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:clamp(7px,2vw,15px); margin:23px auto; max-width:450px }
-.note { position:relative; display:grid; justify-items:center; align-content:center; gap:2px; min-height:clamp(65px,17vw,107px); padding:5px; border-radius:5px 5px 18px 5px; background:#ead7c0; color:#632f3d; box-shadow:0 4px 7px #79573820 }
-.note:nth-child(3n+2) { background:#efdadc }
-.note:nth-child(3n+3) { background:#dce4d7 }
-.note[data-read=true] { box-shadow:inset 0 0 0 2px #85505a }
-.mini-envelope {
-  position:relative; display:block; width:clamp(38px,12vw,76px);
-  aspect-ratio:1.55; border-radius:4px;
-  background:linear-gradient(145deg,#fffaf0,#e8c9ad);
-  box-shadow:0 3px 6px #6f493d40; perspective:190px;
-  transition:transform .25s ease;
+.notes {
+  display:grid; grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:clamp(19px,5.8vw,37px) clamp(12px,4vw,28px);
+  margin:28px auto; max-width:470px; padding:7px 6px;
 }
-.mini-envelope::before,.mini-envelope::after {
-  content:""; position:absolute; inset:0; border-radius:inherit;
+.note {
+  display:block; width:100%; padding:0; border:0;
+  border-radius:5px; background:transparent;
+}
+.mini-envelope {
+  position:relative; display:block; width:100%;
+  aspect-ratio:1.28; border-radius:5px;
+  border:1px solid #fff8edaa;
+  background:linear-gradient(to bottom,#fff8 0%,#fff0 56%,#69553a24 57%,#fff3 59%,#fff0 100%),var(--note-paper);
+  box-shadow:0 7px 13px #6f493d35;
+  rotate:var(--tilt); transition:transform .25s ease;
 }
 .mini-envelope::before {
-  background:linear-gradient(145deg,#f7dfc7,#d8ae8e);
-  clip-path:polygon(0 100%,50% 37%,100% 100%);
-}
-.mini-envelope::after {
-  background:linear-gradient(145deg,#fff3dc,#d9b28e);
-  clip-path:polygon(0 0,100% 0,50% 65%);
-  transform-origin:top; transition:transform .28s ease;
+  content:""; position:absolute; top:-8%; left:50%; translate:-50% 0;
+  width:38%; height:15%; border-radius:1px; rotate:-3deg;
+  background:repeating-linear-gradient(90deg,#fff5 0 4px,transparent 4px 8px),var(--note-tape);
 }
 .mini-seal {
-  position:absolute; z-index:1; top:45%; left:50%; translate:-50% -15%;
-  font-size:clamp(.65rem,2.5vw,1rem); line-height:1;
-  color:var(--wine); transition:transform .25s ease;
+  position:absolute; top:58%; left:50%; translate:-50% -50%;
+  color:#ad364d; font:700 clamp(1.35rem,5.8vw,2.1rem)/1 var(--serif);
+  filter:drop-shadow(0 1px 1px #793c4250);
 }
-.note:hover .mini-envelope { transform:translateY(-3px) rotate(-5deg) }
-.note:active .mini-envelope { transform:scale(.9) }
-.note[data-read=true] .mini-envelope::after { transform:rotateX(156deg) }
-.note[data-read=true] .mini-seal { transform:translateY(3px) }
+.note:hover .mini-envelope { transform:translateY(-4px) }
+.note:active .mini-envelope { transform:scale(.95) }
 .wish-text {
   margin:0; text-align:center; text-wrap:pretty;
   color:#36493b;
-  font-family:"Segoe Print","Comic Sans MS","Bradley Hand",var(--serif);
-  font-size:clamp(1.35rem,5.4vw,2rem); font-style:normal; line-height:1.5;
+  font-family:"Caveat","Segoe Print","Comic Sans MS",cursive; font-weight:600;
+  font-size:clamp(1.75rem,7vw,2.65rem); font-style:normal; line-height:1.18;
   white-space:pre-wrap; overflow-wrap:anywhere;
 }
 #note-dialog[open] { text-align:center; animation:unfold .39s both }
@@ -149,6 +146,7 @@ dialog::backdrop { background:#33211db0; backdrop-filter:blur(4px) }
 }
 #note-dialog::backdrop { background:#4f2e36a6 }
 .wish-paper {
+  width:100%; text-align:center; border-radius:8px;
   position:relative; isolation:isolate;
   display:grid; gap:clamp(13px,4vw,24px);
   max-height:calc(100dvh - 46px); overflow:auto;
@@ -170,16 +168,13 @@ dialog::backdrop { background:#33211db0; backdrop-filter:blur(4px) }
   pointer-events:none;
 }
 #note-title { align-self:center; margin:0; text-align:left }
-#note-dialog .close { border-color:transparent; background:transparent }
-.wish-frame {
+.wish-text {
   display:grid; align-items:center; min-height:clamp(126px,35vw,176px);
-  border:1px dashed #6781658a; border-radius:3px;
-  padding:clamp(9px,4vw,20px);
+  padding:clamp(8px,3vw,16px) 0;
 }
 .fold-wish {
-  justify-self:end; border-color:transparent; background:transparent;
-  color:#415b48; padding:7px 2px 7px 12px;
-  font-weight:600; font-size:.84rem;
+  justify-self:end; color:#415b48;
+  font:500 .84rem/1.35 system-ui,sans-serif;
 }
 @media(prefers-reduced-motion:reduce) { .falling,.flight-layer { display:none } }
 @media(max-width:380px) { .bar button { font-size:.8rem; padding-inline:10px } .brand { font-size:1rem } }
@@ -224,14 +219,11 @@ dialog::backdrop { background:#33211db0; backdrop-filter:blur(4px) }
 </main>
 <dialog id="note-dialog" aria-labelledby="note-title">
   <span class="wish-tape" aria-hidden="true"></span>
-  <div class="wish-paper">
-    <div class="dialog-top">
-      <p class="kicker" id="note-title"></p>
-      <button class="close" id="close-note" type="button" aria-label="Закрыть пожелание">×</button>
-    </div>
-    <div class="wish-frame"><p id="note-text" class="wish-text"></p></div>
-    <button class="fold-wish" id="next-note" type="button">Сложить листок</button>
-  </div>
+  <button type="button" class="wish-paper" id="fold-wish" aria-describedby="note-text">
+    <span class="kicker" id="note-title"></span>
+    <span id="note-text" class="wish-text"></span>
+    <span class="fold-wish">Нажмите, чтобы сложить</span>
+  </button>
 </dialog>
 <script>
 "use strict";
@@ -294,6 +286,7 @@ function renderProgress() {
   Array.from($("grid").children).forEach((button, index) => {
     const read = seen.has(index);
     button.dataset.read = read;
+    button.querySelector(".mini-seal").textContent = read ? "♡" : "♥";
     button.setAttribute("aria-label", (read ? "Перечитать пожелание" : "Открыть пожелание") + " " + (index + 1));
   });
 }
@@ -307,12 +300,23 @@ function renderCard() {
   renderProgress();
   show("cover", false);
 }
+const paperColors = [
+  ["#f7e3a8", "#cb7d86", -7], ["#f3c8d0", "#82a896", 3],
+  ["#d8e9d4", "#dca54c", 7], ["#d9dff5", "#8b9cc6", 6],
+  ["#f7d9ae", "#df9662", -6], ["#ead8ef", "#ad7eb0", -3],
+  ["#d3e9ee", "#77aeb9", 5], ["#f5dfb8", "#ca7b85", -7],
+  ["#e2ebc7", "#d6a43c", 2]
+];
 card.notes.forEach((_, index) => {
   const button = document.createElement("button");
   button.className = "note";
   button.type = "button";
   const envelope = document.createElement("span");
   envelope.className = "mini-envelope";
+  const [paper, tape, tilt] = paperColors[index];
+  envelope.style.setProperty("--note-paper", paper);
+  envelope.style.setProperty("--note-tape", tape);
+  envelope.style.setProperty("--tilt", tilt + "deg");
   envelope.setAttribute("aria-hidden", "true");
   const heart = document.createElement("span");
   heart.className = "mini-seal";
@@ -344,9 +348,9 @@ function flyEnvelopes(origin) {
     const icon = button.querySelector(".mini-envelope");
     const target = icon.getBoundingClientRect();
     const fly = icon.cloneNode(true);
-    fly.style.left = target.left + "px";
-    fly.style.top = target.top + "px";
-    fly.style.width = target.width + "px";
+    fly.style.left = target.left + (target.width - icon.offsetWidth) / 2 + "px";
+    fly.style.top = target.top + (target.height - icon.offsetHeight) / 2 + "px";
+    fly.style.width = icon.offsetWidth + "px";
     layer.append(fly);
     button.classList.add("in-flight");
     const dx = origin.x - (target.left + target.width / 2);
@@ -384,7 +388,25 @@ $("open").addEventListener("click", async () => {
   await flyEnvelopes({x:rect.left + rect.width / 2, y:rect.top + rect.height * .45});
   opening = false;
 });
-$("close-note").onclick = $("next-note").onclick = () => noteDialog.close();
+$("fold-wish").onclick = async () => {
+  const paper = $("fold-wish");
+  if (paper.disabled) return;
+  if (reducedMotion.matches) {
+    noteDialog.close();
+    return;
+  }
+  paper.disabled = true;
+  try {
+    await paper.animate([
+      { opacity:1, transform:"perspective(650px) rotateX(0)" },
+      { opacity:0, transform:"perspective(650px) rotateX(-68deg) scale(.9)" }
+    ], { duration:235, easing:"ease-in", fill:"forwards" }).finished;
+    noteDialog.close();
+  } finally {
+    paper.getAnimations().forEach(animation => animation.cancel());
+    paper.disabled = false;
+  }
+};
 $("show-final").onclick = () => show("letter");
 $("restart").onclick = () => {
   seen.clear();
