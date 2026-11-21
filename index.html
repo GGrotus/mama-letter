@@ -80,8 +80,10 @@ h2 { font-size:clamp(2rem,6vw,3.45rem) }
 .note[data-read=true] .mini-envelope::after { transform:rotateX(156deg) }
 .note[data-read=true] .mini-seal { transform:translateY(3px) }
 .wish-text {
-  margin:22px auto 28px; text-align:center; text-wrap:pretty;
-  font:normal clamp(1.27rem,5vw,1.8rem)/1.5 var(--serif);
+  margin:0; text-align:center; text-wrap:pretty;
+  color:#36493b;
+  font-family:"Segoe Print","Comic Sans MS","Bradley Hand",var(--serif);
+  font-size:clamp(1.35rem,5.4vw,2rem); font-style:normal; line-height:1.5;
   white-space:pre-wrap; overflow-wrap:anywhere;
 }
 #note-dialog[open] { text-align:center; animation:unfold .39s both }
@@ -139,15 +141,45 @@ dialog::backdrop { background:#33211db0; backdrop-filter:blur(4px) }
 .flight-layer .mini-envelope { position:absolute; transition:none }
 .note.in-flight { visibility:hidden }
 #note-dialog {
-  border-radius:5px 5px 14px 5px; border-color:#ddc6b4;
-  background:linear-gradient(90deg,transparent 27px,#c5797e65 28px 29px,transparent 30px),
-    repeating-linear-gradient(to bottom,#fff9ec 0 27px,#adbac752 28px 29px);
-  padding-left:clamp(40px,8vw,55px);
+  --paper-line:clamp(30px,8vw,39px);
+  --paper-margin:clamp(21px,7vw,37px);
+  width:min(calc(100% - 24px),510px);
+  border:0; padding:15px 0 0; overflow:visible;
+  border-radius:0; background:transparent; box-shadow:none;
 }
-#note-dialog::before {
-  content:""; position:absolute; inset:4px auto 8px 6px; width:13px;
-  background:radial-gradient(circle at 6px 13px,#d3bda9 0 2.5px,#fffdf5 3px 4.5px,transparent 5px) left top/13px 24px repeat-y;
+#note-dialog::backdrop { background:#4f2e36a6 }
+.wish-paper {
+  position:relative; isolation:isolate;
+  display:grid; gap:clamp(13px,4vw,24px);
+  max-height:calc(100dvh - 46px); overflow:auto;
+  padding:clamp(19px,5.5vw,32px) clamp(14px,5vw,29px) 12px calc(var(--paper-margin) + 14px);
+  border:1px solid #b6c8a6; border-radius:8px;
+  background:
+    linear-gradient(90deg,transparent calc(var(--paper-margin) - 1px),#a96f75a1 var(--paper-margin),transparent calc(var(--paper-margin) + 1px)),
+    linear-gradient(transparent 48%,#546a5420 50%,#ffffff55 51%,transparent 52%),
+    repeating-linear-gradient(to bottom,transparent 0 calc(var(--paper-line) - 1px),#65856d31 calc(var(--paper-line) - 1px) var(--paper-line)),
+    linear-gradient(155deg,#ecf2dd,#dbe7ce);
+  box-shadow:0 20px 48px #30262263;
+}
+.wish-tape {
+  position:absolute; top:2px; left:50%; translate:-50% 0; z-index:1;
+  width:clamp(76px,26%,126px); height:25px; rotate:-3deg;
+  background:repeating-linear-gradient(90deg,#fff3cb74 0 5px,transparent 5px 10px),#e1a54ac9;
+  box-shadow:0 2px 3px #76532f26;
+  clip-path:polygon(0 7%,100% 0,98% 92%,2% 100%);
   pointer-events:none;
+}
+#note-title { align-self:center; margin:0; text-align:left }
+#note-dialog .close { border-color:transparent; background:transparent }
+.wish-frame {
+  display:grid; align-items:center; min-height:clamp(126px,35vw,176px);
+  border:1px dashed #6781658a; border-radius:3px;
+  padding:clamp(9px,4vw,20px);
+}
+.fold-wish {
+  justify-self:end; border-color:transparent; background:transparent;
+  color:#415b48; padding:7px 2px 7px 12px;
+  font-weight:600; font-size:.84rem;
 }
 @media(prefers-reduced-motion:reduce) { .falling,.flight-layer { display:none } }
 @media(max-width:380px) { .bar button { font-size:.8rem; padding-inline:10px } .brand { font-size:1rem } }
@@ -191,12 +223,15 @@ dialog::backdrop { background:#33211db0; backdrop-filter:blur(4px) }
   </section>
 </main>
 <dialog id="note-dialog" aria-labelledby="note-title">
-  <div class="dialog-top">
-    <p class="kicker" id="note-title"></p>
-    <button class="close" id="close-note" type="button" aria-label="Закрыть записку">×</button>
+  <span class="wish-tape" aria-hidden="true"></span>
+  <div class="wish-paper">
+    <div class="dialog-top">
+      <p class="kicker" id="note-title"></p>
+      <button class="close" id="close-note" type="button" aria-label="Закрыть пожелание">×</button>
+    </div>
+    <div class="wish-frame"><p id="note-text" class="wish-text"></p></div>
+    <button class="fold-wish" id="next-note" type="button">Сложить листок</button>
   </div>
-  <p id="note-text" class="wish-text"></p>
-  <button class="primary" id="next-note" type="button">К пожеланиям</button>
 </dialog>
 <script>
 "use strict";
@@ -287,7 +322,7 @@ card.notes.forEach((_, index) => {
   button.addEventListener("click", () => {
     seen.add(index);
     renderProgress();
-    $("note-title").textContent = "Пожелание для тебя";
+    $("note-title").textContent = "Пожелание " + (index + 1) + " из " + card.notes.length;
     $("note-text").textContent = card.notes[index];
     noteDialog.showModal();
   });
