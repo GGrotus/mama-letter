@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f7f0e4">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%2032%2032%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%229%22%20fill%3D%22%23773b45%22%2F%3E%3Cpath%20fill%3D%22%23fff4e4%22%20d%3D%22M16%2024.5%207.7%2016a5.2%205.2%200%200%201%207.4-7.3l.9%201%20.9-1a5.2%205.2%200%200%201%207.4%207.3z%22%2F%3E%3C%2Fsvg%3E">
 <meta name="description" content="Интерактивная открытка для мамы с девятью пожеланиями и личным письмом.">
 <title>Письмо для мамы</title>
 <style>
@@ -22,7 +23,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-vi
 :focus-visible { outline-offset:4px }
 .bar { max-width:1120px; margin:auto; min-height:74px; padding:12px clamp(14px,4vw,32px); display:flex; align-items:center; justify-content:space-between; gap:10px; border-bottom:1px solid var(--border) }
 .brand { display:flex; align-items:center; gap:8px; font:italic 1.15rem var(--serif) }
-.brand span { color:var(--wine) }
+.brand svg { display:block; width:32px; height:32px; flex:none }
 button { min-height:44px; border-radius:100px; padding:9px 16px; border:1px solid var(--border); background:var(--paper); font-weight:650 }
 button:hover { border-color:var(--wine) }
 .primary { background:var(--wine); color:white; border-color:var(--wine); padding-inline:23px }
@@ -85,7 +86,11 @@ h2 { font-size:clamp(2rem,6vw,3.45rem) }
   white-space:pre-wrap; overflow-wrap:anywhere;
 }
 #note-dialog[open] { text-align:center; animation:unfold .39s both }
-#note-dialog[open] .wish-text { animation:reveal .65s .14s both }
+#note-dialog[open] .wish-text { animation:wish-appear .95s .19s cubic-bezier(.22,.65,.32,1) both }
+@keyframes wish-appear {
+  from { opacity:0; transform:translateY(13px); filter:blur(4px) }
+  to { opacity:1; transform:translateY(0); filter:blur(0) }
+}
 #letter:not([hidden]) .final { animation:unfold .65s both }
 #letter:not([hidden]) .photo { animation:appear .65s .20s both }
 #letter:not([hidden]) h2 { animation:appear .52s .30s both }
@@ -127,7 +132,7 @@ summary { cursor:pointer; font-weight:650; min-height:28px }
 </head>
 <body>
 <header class="bar">
-  <div class="brand"><span aria-hidden="true">♥</span> Почта для мамы</div>
+  <div class="brand"><svg aria-hidden="true" focusable="false" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="9" fill="#773b45"/><path fill="#fff4e4" d="M16 24.5 7.7 16a5.2 5.2 0 0 1 7.4-7.3l.9 1 .9-1a5.2 5.2 0 0 1 7.4 7.3z"/></svg> Почта для мамы</div>
   <button id="edit" type="button">Настроить открытку</button>
 </header>
 <main>
@@ -181,10 +186,11 @@ summary { cursor:pointer; font-weight:650; min-height:28px }
     <label>Подпись <input name="signature" maxlength="65"></label>
     <label>Фото для письма <input id="file" type="file" accept="image/*"></label>
     <button type="button" id="remove-photo" hidden>Убрать фото</button>
-    <p class="hint">Ссылка передаёт текст. Чтобы отправить открытку с фото, скачай HTML-файл и отправь его целиком.</p>
+    <p class="hint">Обычная ссылка открывает приложение. Ссылка на открытку включает твои тексты. Чтобы отправить открытку с фото, скачай HTML-файл.</p>
     <div class="actions">
       <button class="primary" id="preview" type="submit">Посмотреть</button>
-      <button id="share" type="submit">Скопировать ссылку</button>
+      <button id="share-app" type="button">Ссылка на приложение</button>
+      <button id="share" type="submit">Ссылка на открытку</button>
       <button id="download" type="submit">Скачать открытку</button>
     </div>
     <label id="manual-share" hidden>Скопируй ссылку <input id="share-url" readonly></label>
@@ -222,13 +228,33 @@ let photoRequest = 0;
 let opening = false;
 
 function encode(value) {
-  const bytes = new TextEncoder().encode(JSON.stringify(value));
+  return encodeBytes(new TextEncoder().encode(JSON.stringify(value)));
+}
+function encodeBytes(bytes) {
   return btoa(Array.from(bytes, byte => String.fromCharCode(byte)).join(""))
     .replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
 }
 function decode(value) {
-  const bytes = Uint8Array.from(atob(value.replaceAll("-", "+").replaceAll("_", "/")), char => char.charCodeAt(0));
-  return JSON.parse(new TextDecoder().decode(bytes));
+  return JSON.parse(new TextDecoder().decode(decodeBytes(value)));
+}
+function decodeBytes(value) {
+  return Uint8Array.from(atob(value.replaceAll("-", "+").replaceAll("_", "/")), char => char.charCodeAt(0));
+}
+async function compactPayload(value) {
+  const plain = "letter=" + encode(value);
+  if (typeof CompressionStream !== "function") return plain;
+  try {
+    const stream = new Blob([JSON.stringify(value)]).stream().pipeThrough(new CompressionStream("gzip"));
+    const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+    const compact = "card=" + encodeBytes(bytes);
+    return compact.length < plain.length ? compact : plain;
+  } catch {
+    return plain;
+  }
+}
+async function readCard(payload) {
+  const stream = new Blob([decodeBytes(payload)]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return new Response(stream).json();
 }
 function normalize(value) {
   const field = (text, limit, fallback) => typeof text === "string" ? text.trim().slice(0, limit) || fallback : fallback;
@@ -241,15 +267,18 @@ function normalize(value) {
   };
 }
 const embedded = document.documentElement.dataset.letter;
-const shared = location.hash.startsWith("#letter=") ? location.hash.slice(8) : "";
+const params = new URLSearchParams(location.hash.slice(1));
+const shared = params.get("letter");
+const compact = params.get("card");
 let card = normalize(defaults);
-if (embedded || shared) {
+async function loadCard() {
+  if (!embedded && !shared && !compact) return;
+  $("edit").hidden = true;
   try {
-    const parsed = decode(embedded || shared);
+    const parsed = embedded || shared ? decode(embedded || shared) : await readCard(compact);
     card = normalize(embedded ? parsed : { ...parsed, photo:"" });
-    $("edit").hidden = true;
   } catch {
-    // An incomplete link falls back to the example.
+    $("edit").hidden = false;
   }
 }
 function show(screen, focus = true) {
@@ -339,11 +368,30 @@ $("edit").onclick = () => {
   draftPhoto = card.photo;
   $("file").value = "";
   $("remove-photo").hidden = !draftPhoto;
-  $("share").hidden = !/^https?:$/.test(location.protocol);
+  $("share-app").hidden = $("share").hidden = !/^https?:$/.test(location.protocol);
   $("manual-share").hidden = true;
   $("feedback").textContent = "";
   editor.showModal();
 };
+function appUrl() {
+  const url = new URL(location.href);
+  url.hash = "";
+  url.search = "";
+  return url;
+}
+async function copyLink(url, feedback) {
+  try {
+    await navigator.clipboard.writeText(url.href);
+    $("manual-share").hidden = true;
+    $("feedback").textContent = feedback;
+  } catch {
+    $("manual-share").hidden = false;
+    $("share-url").value = url.href;
+    $("share-url").select();
+    $("feedback").textContent = "";
+  }
+}
+$("share-app").onclick = () => copyLink(appUrl(), "Ссылка на приложение скопирована.");
 $("close-editor").onclick = () => editor.close();
 editor.addEventListener("close", () => {
   photoRequest++;
@@ -412,17 +460,9 @@ form.addEventListener("submit", async event => {
     return;
   }
   if (event.submitter?.id === "share") {
-    const url = new URL(location.href);
-    url.hash = "letter=" + encode({ ...value, photo:"" });
-    try {
-      await navigator.clipboard.writeText(url.href);
-      $("manual-share").hidden = true;
-      $("feedback").textContent = "Ссылка скопирована.";
-    } catch {
-      $("manual-share").hidden = false;
-      $("share-url").value = url.href;
-      $("share-url").select();
-    }
+    const url = appUrl();
+    url.hash = await compactPayload({ ...value, photo:"" });
+    await copyLink(url, "Ссылка на открытку скопирована.");
     return;
   }
   card = value;
@@ -430,7 +470,7 @@ form.addEventListener("submit", async event => {
   renderCard();
   $("cover-title").focus({preventScroll:true});
 });
-renderCard();
+loadCard().then(renderCard);
 </script>
 </body>
 </html>
