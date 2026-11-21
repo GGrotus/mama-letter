@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f7f0e4">
-<meta name="description" content="Интерактивная открытка для мамы с девятью записками и личным письмом.">
+<meta name="description" content="Интерактивная открытка для мамы с девятью пожеланиями и личным письмом.">
 <title>Письмо для мамы</title>
 <style>
 :root {
@@ -50,8 +50,57 @@ h2 { font-size:clamp(2rem,6vw,3.45rem) }
 .note:nth-child(3n+2) { background:#efdadc }
 .note:nth-child(3n+3) { background:#dce4d7 }
 .note[data-read=true] { box-shadow:inset 0 0 0 2px #85505a }
-.note strong { font:normal clamp(1.4rem,5vw,2rem) var(--serif) }
-.note small { font-size:.7rem }
+.mini-envelope {
+  position:relative; display:block; width:clamp(38px,12vw,76px);
+  aspect-ratio:1.55; border-radius:4px;
+  background:linear-gradient(145deg,#fffaf0,#e8c9ad);
+  box-shadow:0 3px 6px #6f493d40; perspective:190px;
+  transition:transform .25s ease;
+}
+.mini-envelope::before,.mini-envelope::after {
+  content:""; position:absolute; inset:0; border-radius:inherit;
+}
+.mini-envelope::before {
+  background:linear-gradient(145deg,#f7dfc7,#d8ae8e);
+  clip-path:polygon(0 100%,50% 37%,100% 100%);
+}
+.mini-envelope::after {
+  background:linear-gradient(145deg,#fff3dc,#d9b28e);
+  clip-path:polygon(0 0,100% 0,50% 65%);
+  transform-origin:top; transition:transform .28s ease;
+}
+.mini-seal {
+  position:absolute; z-index:1; top:45%; left:50%; translate:-50% -15%;
+  font-size:clamp(.65rem,2.5vw,1rem); line-height:1;
+  color:var(--wine); transition:transform .25s ease;
+}
+.note:hover .mini-envelope { transform:translateY(-3px) rotate(-5deg) }
+.note:active .mini-envelope { transform:scale(.9) }
+.note[data-read=true] .mini-envelope::after { transform:rotateX(156deg) }
+.note[data-read=true] .mini-seal { transform:translateY(3px) }
+.note { animation:appear .48s both; animation-delay:calc(var(--order) * 55ms) }
+.wish-text {
+  margin:22px auto 28px; text-align:center; text-wrap:pretty;
+  font:normal clamp(1.27rem,5vw,1.8rem)/1.5 var(--serif);
+  white-space:pre-wrap; overflow-wrap:anywhere;
+}
+#note-dialog[open] { text-align:center; animation:unfold .39s both }
+#note-dialog[open] .wish-text { animation:reveal .65s .14s both }
+#letter:not([hidden]) .final { animation:unfold .65s both }
+#letter:not([hidden]) .photo { animation:appear .65s .20s both }
+#letter:not([hidden]) h2 { animation:appear .52s .30s both }
+#letter:not([hidden]) .letter-text { animation:reveal 1.05s .45s both }
+#letter:not([hidden]) .signature { animation:appear .6s .82s both }
+#letter:not([hidden]) #restart { animation:appear .45s 1.02s both }
+.cover:not(.opening) .envelope { animation:float 4.8s ease-in-out infinite }
+.opening .envelope { animation:open-envelope .7s ease both }
+.opening .spark { animation:spark-out .65s ease both }
+@keyframes appear { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:translateY(0) } }
+@keyframes reveal { from { opacity:0; clip-path:inset(0 0 100%); transform:translateY(8px) } to { opacity:1; clip-path:inset(0 0 0); transform:translateY(0) } }
+@keyframes unfold { from { opacity:0; transform:perspective(750px) translateY(22px) rotateX(-17deg) scale(.95) } to { opacity:1; transform:perspective(750px) translateY(0) rotateX(0) scale(1) } }
+@keyframes float { 0%,100% { transform:translateY(0) rotate(-6deg) } 50% { transform:translateY(-7px) rotate(-4deg) } }
+@keyframes open-envelope { 0% { transform:rotate(-6deg) } 52% { transform:translateY(-9px) rotate(0) scale(1.04) } 100% { transform:translateY(15px) rotate(0) scale(.98); opacity:0 } }
+@keyframes spark-out { from { opacity:1; transform:scale(.75) } to { opacity:0; transform:translateY(-28px) rotate(40deg) scale(1.65) } }
 .progress { margin-top:8px; color:var(--muted); font-size:.85rem }
 .final { max-width:470px; margin:auto; padding:clamp(16px,4vw,32px); background:#fffaf2; border:1px solid var(--border); border-radius:4px 4px 24px 4px; box-shadow:0 8px 20px #593e2519 }
 .photo { display:block; width:min(100%,310px); max-height:44svh; object-fit:contain; margin:0 auto 20px; background:#f3e8db; border:7px solid white; box-shadow:0 3px 12px #593e2530 }
@@ -73,7 +122,7 @@ summary { cursor:pointer; font-weight:650; min-height:28px }
 .hint { color:var(--muted); font-size:.82rem; line-height:1.5 }
 #feedback { min-height:1em }
 @media(max-width:380px) { .bar button { font-size:.8rem; padding-inline:10px } .brand { font-size:1rem } }
-@media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none!important } }
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none!important; animation:none!important } }
 </style>
 </head>
 <body>
@@ -85,7 +134,7 @@ summary { cursor:pointer; font-weight:650; min-height:28px }
   <section class="scene cover" id="cover" aria-labelledby="cover-title">
     <p class="kicker">От всего сердца</p>
     <h1 id="cover-title" tabindex="-1"><span id="cover-name">Мама</span>,<br>это тебе</h1>
-    <p class="intro">Девять маленьких поводов сказать спасибо.</p>
+    <p class="intro">Девять тёплых пожеланий для тебя.</p>
     <div class="art" aria-hidden="true">
       <span class="spark">✧</span>
       <div class="envelope"><span class="flap"></span><span class="seal">♥</span></div>
@@ -95,8 +144,8 @@ summary { cursor:pointer; font-weight:650; min-height:28px }
   </section>
   <section class="scene" id="notes" aria-labelledby="notes-title" hidden>
     <p class="kicker">Из конверта</p>
-    <h2 id="notes-title" tabindex="-1">Девять записок</h2>
-    <p class="intro">Открывай в любом порядке.</p>
+    <h2 id="notes-title" tabindex="-1">Девять пожеланий</h2>
+    <p class="intro">Открывай конвертики в любом порядке.</p>
     <p class="progress" id="progress" aria-live="polite"></p>
     <div class="notes" id="grid"></div>
     <button class="primary" id="show-final" type="button" hidden>Прочитать письмо</button>
@@ -117,8 +166,8 @@ summary { cursor:pointer; font-weight:650; min-height:28px }
     <p class="kicker" id="note-title"></p>
     <button class="close" id="close-note" type="button" aria-label="Закрыть записку">×</button>
   </div>
-  <p id="note-text" class="letter-text"></p>
-  <button class="primary" id="next-note" type="button">К запискам</button>
+  <p id="note-text" class="wish-text"></p>
+  <button class="primary" id="next-note" type="button">К пожеланиям</button>
 </dialog>
 <dialog id="editor" aria-labelledby="editor-title">
   <div class="dialog-top">
@@ -127,7 +176,7 @@ summary { cursor:pointer; font-weight:650; min-height:28px }
   </div>
   <form id="form">
     <label>Обращение <input name="name" maxlength="40" required></label>
-    <details><summary>Девять записок</summary><div id="note-fields"></div></details>
+    <details><summary>Девять пожеланий</summary><div id="note-fields"></div></details>
     <label>Финальное письмо <textarea name="message" maxlength="500" rows="4" required></textarea></label>
     <label>Подпись <input name="signature" maxlength="65"></label>
     <label>Фото для письма <input id="file" type="file" accept="image/*"></label>
@@ -149,18 +198,18 @@ const $ = id => document.getElementById(id);
 const defaults = {
   name:"Мама",
   notes:[
-    "Спасибо за то, что рядом с тобой я всегда чувствую себя дома.",
-    "За то, что умеешь выслушать, даже когда у меня нет нужных слов.",
-    "За наши разговоры на кухне, когда чай давно остыл.",
-    "За смех, который я узнаю из любой комнаты.",
-    "За то, что верила в меня, когда я сам сомневался.",
-    "За простое «напиши, как доедешь». В нём столько заботы.",
-    "За всё, чему ты научила меня своим примером.",
-    "За объятия, после которых даже трудный день становится легче.",
-    "За то, что рядом с тобой можно просто быть собой."
+    "Мама, желаю тебе крепкого здоровья и побольше дней, когда ты полна сил.",
+    "Пусть у тебя всегда будет время на то, что ты любишь.",
+    "Желаю тебе спокойных утр, когда можно допить чай горячим и никуда не спешить.",
+    "Пусть будет больше поводов смеяться до слёз.",
+    "Желаю, чтобы рядом всегда были люди, с которыми тебе спокойно и хорошо.",
+    "Пусть сбывается то, о чём ты давно мечтаешь.",
+    "Желаю тебе чаще слышать, как сильно тебя любят и ценят.",
+    "Пусть даже в самый обычный день найдётся повод улыбнуться.",
+    "Желаю нам побольше встреч, долгих разговоров и крепких объятий."
   ],
   message:"Спасибо, что ты у меня есть. Я не всегда успеваю это сказать, но очень тебя люблю.",
-  signature:"С любовью",
+  signature:"С любовью, твоя дочка",
   photo:""
 };
 const photoPattern = /^data:image\/jpeg;base64,[\w+/=]+$/;
@@ -211,13 +260,12 @@ function show(screen, focus = true) {
   }
 }
 function renderProgress() {
-  $("progress").textContent = "Прочитано " + seen.size + " из " + card.notes.length;
+  $("progress").textContent = "Открыто " + seen.size + " из " + card.notes.length;
   $("show-final").hidden = seen.size !== card.notes.length;
   Array.from($("grid").children).forEach((button, index) => {
     const read = seen.has(index);
     button.dataset.read = read;
-    button.querySelector("small").textContent = read ? "Прочитано" : "Читать";
-    button.setAttribute("aria-label", "Записка " + (index + 1) + (read ? ", прочитано" : ""));
+    button.setAttribute("aria-label", (read ? "Перечитать пожелание" : "Открыть пожелание") + " " + (index + 1));
   });
 }
 function renderCard() {
@@ -236,21 +284,27 @@ function renderCard() {
 card.notes.forEach((_, index) => {
   const button = document.createElement("button");
   button.className = "note";
+  button.style.setProperty("--order", index);
   button.type = "button";
-  const number = document.createElement("strong");
-  number.textContent = String(index + 1).padStart(2, "0");
-  button.append(number, document.createElement("small"));
+  const envelope = document.createElement("span");
+  envelope.className = "mini-envelope";
+  envelope.setAttribute("aria-hidden", "true");
+  const heart = document.createElement("span");
+  heart.className = "mini-seal";
+  heart.textContent = "♥";
+  envelope.append(heart);
+  button.append(envelope);
   button.addEventListener("click", () => {
     seen.add(index);
     renderProgress();
-    $("note-title").textContent = "Записка " + (index + 1) + " из " + card.notes.length;
+    $("note-title").textContent = "Пожелание для тебя";
     $("note-text").textContent = card.notes[index];
     noteDialog.showModal();
   });
   $("grid").append(button);
 
   const label = document.createElement("label");
-  label.textContent = "Записка " + (index + 1);
+  label.textContent = "Пожелание " + (index + 1);
   const input = document.createElement("textarea");
   input.name = "note" + index;
   input.rows = 2;
@@ -262,7 +316,7 @@ $("open").addEventListener("click", () => {
   if (opening) return;
   opening = true;
   $("cover").classList.add("opening");
-  const delay = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500;
+  const delay = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 700;
   window.setTimeout(() => {
     $("cover").classList.remove("opening");
     opening = false;
