@@ -84,10 +84,17 @@ h2 { font-size:clamp(2rem,6vw,3.45rem) }
   white-space:pre-wrap; overflow-wrap:anywhere;
 }
 #note-dialog[open] { text-align:center; animation:unfold .39s both }
-#note-dialog[open] .wish-text { animation:wish-appear .95s .19s cubic-bezier(.22,.65,.32,1) both }
-@keyframes wish-appear {
-  from { opacity:0; transform:translateY(13px); filter:blur(4px) }
-  to { opacity:1; transform:translateY(0); filter:blur(0) }
+.wish-accessible {
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip-path:inset(50%); white-space:nowrap;
+}
+#note-dialog[open] .ink-letter {
+  animation:ink-appear .16s linear both;
+  animation-delay:var(--ink-time);
+}
+@keyframes ink-appear {
+  from { opacity:0 }
+  to { opacity:1 }
 }
 #letter:not([hidden]) .final { animation:unfold .65s both }
 #letter:not([hidden]) .photo { animation:appear .65s .20s both }
@@ -221,7 +228,8 @@ dialog::backdrop { background:#33211db0; backdrop-filter:blur(4px) }
   <span class="wish-tape" aria-hidden="true"></span>
   <button type="button" class="wish-paper" id="fold-wish" aria-describedby="note-text">
     <span class="kicker" id="note-title"></span>
-    <span id="note-text" class="wish-text"></span>
+    <span id="note-text" class="wish-accessible"></span>
+    <span class="wish-text" aria-hidden="true"><span id="wish-ink"></span></span>
     <span class="fold-wish">Нажмите, чтобы сложить</span>
   </button>
 </dialog>
@@ -327,7 +335,7 @@ card.notes.forEach((_, index) => {
     seen.add(index);
     renderProgress();
     $("note-title").textContent = "Пожелание " + (index + 1) + " из " + card.notes.length;
-    $("note-text").textContent = card.notes[index];
+    writeWish(card.notes[index]);
     noteDialog.showModal();
   });
   $("grid").append(button);
@@ -335,6 +343,34 @@ card.notes.forEach((_, index) => {
 });
 
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+function writeWish(text) {
+  $("note-text").textContent = text;
+  const ink = $("wish-ink");
+  if (reducedMotion.matches) {
+    ink.textContent = text;
+    return;
+  }
+
+  const letters = Array.from(text);
+  const pace = Math.min(39, 2900 / letters.length);
+  const fragment = document.createDocumentFragment();
+  let time = 280;
+  for (const [index, letter] of letters.entries()) {
+    if (/\s/u.test(letter)) {
+      fragment.append(letter);
+      time += pace * .45;
+      continue;
+    }
+    const glyph = document.createElement("span");
+    glyph.className = "ink-letter";
+    glyph.style.setProperty("--ink-time", Math.round(time) + "ms");
+    glyph.textContent = letter;
+    fragment.append(glyph);
+    time += /[,.!?…:;—]/u.test(letter) ? pace * 2.65 : pace * (.79 + index % 5 * .1);
+  }
+  ink.replaceChildren(fragment);
+}
 
 function flyEnvelopes(origin) {
   const buttons = Array.from($("grid").children);
